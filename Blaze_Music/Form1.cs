@@ -537,6 +537,7 @@ namespace Blaze_Music
 
         private static void WriteLog(string log)
         {
+            //a
             try
             {
                 StringBuilder sb = new StringBuilder();
