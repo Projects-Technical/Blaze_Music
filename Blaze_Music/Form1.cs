@@ -550,12 +550,17 @@ namespace Blaze_Music
 
             }
         }
+
+        private void WMP_OnError(object sender, EventArgs args)
+        {
+            WriteLog(args.ToString());
+        }
         private void Form1_Load(object sender, EventArgs e)
         {
             readconfig();
             thistitle = this.Text;
             WriteLog("Program Started");
-
+            
             
             if (runBlaze == true)
             {
@@ -579,6 +584,7 @@ namespace Blaze_Music
                 htpb.Location = new Point(4, 210);
                 htpb.MouseMove += new MouseEventHandler(htpb_hover);
 
+                WMP.ErrorEvent += new EventHandler(WMP_OnError);
 
                 htpb.BringToFront();
                 this.Controls.Add(htpb);
@@ -600,10 +606,16 @@ namespace Blaze_Music
 
                 WMP.enableContextMenu = false;
                 WMP.uiMode = "none";
-                Thread nthread = new Thread(Tcpserver);
-                nthread.IsBackground = true;
-                nthread.Start();
-            }
+                try
+                {
+                    Thread nthread = new Thread(Tcpserver);
+                    nthread.IsBackground = true;
+                    nthread.Start();
+                }catch(Exception ex)
+                {
+                    WriteLog("Cannot Start Music Web Server");
+                }
+                }
             else
             {
                 WMP.Visible = false;
@@ -648,7 +660,7 @@ namespace Blaze_Music
             }
             catch (Exception ex)
             {
-                WriteLog(ex.ToString());
+                WriteLog("Player Progress Error - " + ex.ToString());
 
             }
         }
@@ -1150,20 +1162,32 @@ namespace Blaze_Music
 
             private static int PingMyzone()
             {
-                Ping nping = new Ping();
-                PingReply pr = nping.Send(myzoneip, 30);
+                //  Ping nping = new Ping();
+                // PingReply pr = nping.Send(myzoneip, 30);
 
-               
-                if(pr.Status == IPStatus.Success)
+                TcpClient tcpc = new TcpClient();
+                tcpc.Client.SendTimeout = 30;
+                tcpc.Client.ReceiveTimeout = 30;
+                int retstatus = 0;
+                try
                 {
-                    return 1;
-                }
-                else
+                    tcpc.Connect(new IPEndPoint(IPAddress.Parse(myzoneip), 8080));
+         
+                    if(tcpc.Client.Connected==true)
+                    {
+                        tcpc.Client.Close();
+                        tcpc.Close();
+                        retstatus = 1;
+                    }
+
+                }catch(Exception ex)
                 {
-                    return 0;
+                    retstatus = 0;
                 }
 
-                
+
+
+                return retstatus;
             }
 
 
