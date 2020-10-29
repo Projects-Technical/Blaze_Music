@@ -35,6 +35,7 @@
             this.btnSkip = new System.Windows.Forms.Button();
             this.lblCurTime = new System.Windows.Forms.Label();
             this.wmpTimer = new System.Windows.Forms.Timer(this.components);
+            this.lblrcnt = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.WMP)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.skpTime)).BeginInit();
             this.SuspendLayout();
@@ -42,10 +43,10 @@
             // WMP
             // 
             this.WMP.Enabled = true;
-            this.WMP.Location = new System.Drawing.Point(4, 3);
+            this.WMP.Location = new System.Drawing.Point(0, 3);
             this.WMP.Name = "WMP";
             this.WMP.OcxState = ((System.Windows.Forms.AxHost.State)(resources.GetObject("WMP.OcxState")));
-            this.WMP.Size = new System.Drawing.Size(394, 182);
+            this.WMP.Size = new System.Drawing.Size(398, 182);
             this.WMP.TabIndex = 0;
             this.WMP.Enter += new System.EventHandler(this.WMP_Enter);
             // 
@@ -84,12 +85,22 @@
             this.wmpTimer.Enabled = true;
             this.wmpTimer.Tick += new System.EventHandler(this.wmpTimer_Tick);
             // 
+            // lblrcnt
+            // 
+            this.lblrcnt.AutoSize = true;
+            this.lblrcnt.ForeColor = System.Drawing.SystemColors.ButtonHighlight;
+            this.lblrcnt.Location = new System.Drawing.Point(332, 113);
+            this.lblrcnt.Name = "lblrcnt";
+            this.lblrcnt.Size = new System.Drawing.Size(0, 13);
+            this.lblrcnt.TabIndex = 4;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Black;
             this.ClientSize = new System.Drawing.Size(398, 231);
+            this.Controls.Add(this.lblrcnt);
             this.Controls.Add(this.lblCurTime);
             this.Controls.Add(this.btnSkip);
             this.Controls.Add(this.skpTime);
@@ -116,6 +127,7 @@
         private System.Windows.Forms.Button btnSkip;
         private System.Windows.Forms.Label lblCurTime;
         private System.Windows.Forms.Timer wmpTimer;
+        private System.Windows.Forms.Label lblrcnt;
     }
 }
 

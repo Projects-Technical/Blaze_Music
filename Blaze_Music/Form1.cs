@@ -555,6 +555,9 @@ namespace Blaze_Music
         {
             WriteLog(args.ToString());
         }
+
+        int rqcnt = 0;
+
         private void Form1_Load(object sender, EventArgs e)
         {
             readconfig();
@@ -637,7 +640,7 @@ namespace Blaze_Music
         ToolTip newtt = new ToolTip();
         private void htpb_hover(object sender, MouseEventArgs args)
         {
-
+            //a
             
             try
             {
@@ -852,6 +855,8 @@ namespace Blaze_Music
                 }
             }
         }
+        
+
 
         public partial class MyzoneServer
         {
@@ -870,10 +875,12 @@ namespace Blaze_Music
             static List<TcpClient> clients = new List<TcpClient>();
             static List<String> inccmds = new List<String>();
             static int clientcount = 0;
+   
 
+            
             public void StartServer()
             {
-          
+
                 if(!Directory.Exists(logdir + "\\Play-Logs\\"))
                 {
                     Directory.CreateDirectory(logdir + "\\Play-Logs");
@@ -889,6 +896,14 @@ namespace Blaze_Music
                 if (!tcpsrv.IsAlive)
                 {
                     tcpsrv.Start();
+                }
+
+                Thread PingMz = new Thread(PingMyzone);
+                PingMz.IsBackground = true;
+
+                if(!PingMz.IsAlive)
+                {
+                    PingMz.Start();
                 }
                 }
 
@@ -908,7 +923,7 @@ namespace Blaze_Music
             }
 
 
-
+           
             public static void Tcpserver()
             {
                 server = new TcpListener(ipe);
@@ -944,6 +959,7 @@ namespace Blaze_Music
                 server.Stop();
                 Thread.CurrentThread.Abort();
             }
+            static int rqcnt = 0;
 
             private static void Tcpclientmgr(TcpClient tcpc, int clientid, string clientname)
             {
@@ -1052,56 +1068,89 @@ namespace Blaze_Music
                                 switch (sepqueries[0].ToLower().Trim())
                                 {
                                     case "/getmyzonestatus":
-                                        string status = PingMyzone().ToString();
+                                        string status = myzonestatus.ToString();
                                         response = "HTTP/1.1 200 OK\r\nDate: " + DateTime.Now.ToString("ddd MMM yyy HH:mm:SS") + "\r\nServer: Graeme Hind / 1.0 (Win64)\r\nLast - Modified: " + DateTime.Now.ToString("ddd MMM yyy HH:mm:SS") + "\r\nContent - Length: " + status.Length + "\r\nContent-Type: text/plain\r\nConnection: Closed";
 
 
                                         StringBuilder sb = new StringBuilder();
                                         sb.AppendLine();
                                         
-                                        nbuffinc = Encoding.ASCII.GetBytes(response + "\r\n\r\n" + PingMyzone().ToString());
+                                        nbuffinc = Encoding.ASCII.GetBytes(response + "\r\n\r\n" + status);
                                         ns.Write(nbuffinc, 0, nbuffinc.Length);
                                         break;
                                     case "/getsongs":
-                                        String[] tracks45 = Directory.GetFiles(Dir45, "*.mp3");
-                                        String[] tracks55 = Directory.GetFiles(Dir55, "*.mp3");
-                                        StringBuilder sb45 = new StringBuilder();
-                                        sb45.Append("{\"Tracks45min\":[");
-                                        foreach(string s in tracks45)
+                                        try
                                         {
-                                            if (s != tracks45.Last())
+                                            String[] tracks45 = Directory.GetFiles(Dir45, "*.mp3");
+                                            String[] tracks55 = Directory.GetFiles(Dir55, "*.mp3");
+                                            
+
+                                            StringBuilder sb45 = new StringBuilder();
+                                            sb45.Append("{\"Tracks45min\":[");
+                                            try
                                             {
-                                                string s2 = s.Replace("\\", "/");
-                                                sb45.Append("{\"name\":\"" + Path.GetFileNameWithoutExtension(s) + "\",\"filePath\":\"" + Uri.EscapeDataString(s2.Replace("C:", "")).ToString() + "\"},");
+                                                foreach (string s in tracks45)
+                                                {
+                                                    if (s != tracks45.Last())
+                                                    {
+                                                        string s2 = s.Replace("\\", "/");
+                                                        sb45.Append("{\"name\":\"" + Path.GetFileNameWithoutExtension(s) + "\",\"filePath\":\"" + Uri.EscapeDataString(s2.Replace("C:", "")).ToString() + "\"},");
+                                                    }
+                                                    else
+                                                    {
+                                                        string s2 = s.Replace("\\", "/");
+                                                        sb45.Append("{\"name\":\"" + Path.GetFileNameWithoutExtension(s) + "\",\"filePath\":\"" + Uri.EscapeDataString(s2.Replace("C:", "")).ToString() + "\"}");
+
+                                                    }
+                                                }
                                             }
-                                            else
+                                            catch (Exception ex)
                                             {
-                                                string s2 = s.Replace("\\", "/");
-                                                sb45.Append("{\"name\":\"" + Path.GetFileNameWithoutExtension(s) + "\",\"filePath\":\"" + Uri.EscapeDataString(s2.Replace("C:", "")).ToString() + "\"}],\"Tracks55min\":[");
 
                                             }
-                                        }
+                                            sb45.Append("],\"Tracks55min\":[");
 
 
-                                        foreach (string s in tracks55)
+                                            try
+                                            {
+                                                foreach (string s in tracks55)
+                                                {
+
+                                                    if (s != tracks55.Last())
+                                                    {
+                                                        string s2 = s.Replace("\\", "/");
+                                                        sb45.Append("{\"name\":\"" + Path.GetFileNameWithoutExtension(s) + "\",\"filePath\":\"" + Uri.EscapeDataString(s2.Replace("C:", "")).ToString() + "\"},");
+                                                    }
+                                                    else
+                                                    {
+                                                        string s2 = s.Replace("\\", "/");
+                                                        sb45.Append("{\"name\":\"" + Path.GetFileNameWithoutExtension(s) + "\",\"filePath\":\"" + Uri.EscapeDataString(s2.Replace("C:", "")).ToString() + "\"}");
+
+                                                    }
+                                                }
+                                            }
+                                            catch (Exception ex)
+                                            {
+
+                                            }
+
+                                            sb45.Append("]}");
+                                            response = "HTTP/1.1 200 OK\r\nDate: " + DateTime.Now.ToString("ddd MMM yyy HH:mm:SS") + "\r\nServer: Graeme Hind / 1.0 (Win64)\r\nLast - Modified: " + DateTime.Now.ToString("ddd MMM yyy HH:mm:SS") + "\r\nContent - Length: " + sb45.Length + "\r\nContent-Type: application/json\r\nConnection: Closed";
+
+                                            nbuffinc = Encoding.ASCII.GetBytes(response + "\r\n\r\n" + sb45.ToString());
+                                            ns.Write(nbuffinc, 0, nbuffinc.Length);
+                                        }catch(Exception ex)
                                         {
-                                           
-                                            if (s != tracks55.Last())
-                                            {
-                                                string s2 = s.Replace("\\", "/");
-                                                sb45.Append("{\"name\":\"" + Path.GetFileNameWithoutExtension(s) + "\",\"filePath\":\"" + Uri.EscapeDataString(s2.Replace("C:", "")).ToString() + "\"},");
-                                            }
-                                            else
-                                            {
-                                                string s2 = s.Replace("\\", "/");
-                                                sb45.Append("{\"name\":\"" + Path.GetFileNameWithoutExtension(s) + "\",\"filePath\":\"" + Uri.EscapeDataString(s2.Replace("C:", "")).ToString() + "\"}]}");
+                                            string resp = "No Content to Show";
+                                            response = "HTTP/1.1 200 OK\r\nDate: " + DateTime.Now.ToString("ddd MMM yyy HH:mm:SS") + "\r\nServer: Graeme Hind / 1.0 (Win64)\r\nLast - Modified: " + DateTime.Now.ToString("ddd MMM yyy HH:mm:SS") + "\r\nContent-Length: " + resp.Length + "\r\nContent-Type: text/plain\r\nConnection: Closed";
 
-                                            }
+                                            nbuffinc = Encoding.ASCII.GetBytes(response + "\r\n\r\n" + resp.ToString());
+                                            ns.Write(nbuffinc, 0, nbuffinc.Length);
                                         }
-                                        response = "HTTP/1.1 200 OK\r\nDate: " + DateTime.Now.ToString("ddd MMM yyy HH:mm:SS") + "\r\nServer: Graeme Hind / 1.0 (Win64)\r\nLast - Modified: " + DateTime.Now.ToString("ddd MMM yyy HH:mm:SS") + "\r\nContent - Length: " + sb45.Length + "\r\nContent-Type: application/json\r\nConnection: Closed";
-
-                                        nbuffinc = Encoding.ASCII.GetBytes(response + "\r\n\r\n" + sb45.ToString());
-                                        ns.Write(nbuffinc, 0, nbuffinc.Length);
+                                        
+                                        
+                                        
+                                        //Form1.ActiveForm.Invoke(new Action(() => Form1.ActiveForm.Controls["lblrcnt"].Text = rqcnt.ToString()));
                                         break;
                                     case "/get55track":
                                         //MessageBox.Show("55 Tracks");
@@ -1121,11 +1170,20 @@ namespace Blaze_Music
                                         nbuffinc = Encoding.ASCII.GetBytes(response + "\r\n\r\n" + cont.ToString());
                                         ns.Write(nbuffinc, 0, nbuffinc.Length);
                                         break;
+                                    case "/":
+                                        string nbf = "Blaze Server";
+                                       
+                                        response = "HTTP/1.1 200 OK\r\nDate: " + DateTime.Now.ToString("ddd MMM yyy HH:mm:SS") + "\r\nServer: Graeme Hind / 1.0 (Win64)\r\nLast - Modified: " + DateTime.Now.ToString("ddd MMM yyy HH:mm:SS") + "\r\nContent-Length: " + nbf.Length + "\r\nContent-Type: text/plain\r\nConnection: Closed";
+                                        nbuffinc = Encoding.ASCII.GetBytes(response + "\r\n\r\n" + nbf);
+                                        ns.Write(nbuffinc, 0, nbuffinc.Length);
+
+                                        break;
 
 
 
                                 }
-                            }catch(Exception ex)
+                            }
+                            catch(Exception ex)
                             {
                                 //MessageBox.Show(ex.ToString());
                             }
@@ -1159,35 +1217,39 @@ namespace Blaze_Music
                 tcpc.Close();
                 Thread.CurrentThread.Abort();
             }
-
-            private static int PingMyzone()
+            static int myzonestatus = 0;
+            private static void PingMyzone()
             {
-                //  Ping nping = new Ping();
-                // PingReply pr = nping.Send(myzoneip, 30);
-
-                TcpClient tcpc = new TcpClient();
-                tcpc.Client.SendTimeout = 30;
-                tcpc.Client.ReceiveTimeout = 30;
-                int retstatus = 0;
-                try
+                while (true)
                 {
-                    tcpc.Connect(new IPEndPoint(IPAddress.Parse(myzoneip), 8080));
-         
-                    if(tcpc.Client.Connected==true)
+                    //  Ping nping = new Ping();
+                    // PingReply pr = nping.Send(myzoneip, 30);
+                    //asv
+
+                    TcpClient tcpc = new TcpClient();
+                    tcpc.Client.SendTimeout = 30;
+                    tcpc.Client.ReceiveTimeout = 30;
+                    int retstatus = 0;
+                    try
                     {
-                        tcpc.Client.Close();
-                        tcpc.Close();
-                        retstatus = 1;
+                        tcpc.Connect(new IPEndPoint(IPAddress.Parse(myzoneip), 8080));
+
+                        if (tcpc.Client.Connected == true)
+                        {
+                            tcpc.Client.Close();
+                            tcpc.Close();
+                            myzonestatus = 1;
+                        }
+
+                    }
+                    catch (Exception ex)
+                    {
+                        myzonestatus = 0;
                     }
 
-                }catch(Exception ex)
-                {
-                    retstatus = 0;
+                    Thread.Sleep(30000);
                 }
-
-
-
-                return retstatus;
+               
             }
 
 
